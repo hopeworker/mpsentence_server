@@ -1,3 +1,4 @@
+import datetime
 import json
 import requests
 from django.utils import timezone
@@ -116,5 +117,26 @@ def translate(request):
             t.save()
             return JsonResponse({'error_code': 0, 'msg': 'submit translate ok', 'data': ''})
         fail_msg = 'submit translate fail! no openId param'
+        return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
+    elif request.method == 'GET':
+        date_string = request.GET.get('date')
+        if date_string:
+            y, m, d = date_string.split('/')
+            date = datetime.datetime(int(y), int(m), int(d))
+            s = Sentence.objects.filter(date=date).first()
+            translates = Translate.objects.filter(sentence=s)
+            trans_list = list()
+            for item in translates:
+                res = dict()
+                res['sentence'] = item.sentence.content
+                res['nickName'] = item.user.nickName
+                res['avatarUrl'] = item.user.avatarUrl
+                res['content'] = item.content
+                res['numberOfLikes'] = item.numberOfLikes
+                res['numberOfComments'] = item.numberOfComments
+                trans_list.append(res)
+            res_data = {'sentence': s.content, 'translates': trans_list}
+            return JsonResponse({'error_code': 0, 'msg': 'get translates ok', 'data': res_data})
+        fail_msg = 'get translates fail! no date param'
         return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
 
