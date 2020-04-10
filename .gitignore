@@ -71,8 +71,11 @@ target/
 *.pyc
 __pycache__/
 
-# settings 	
+# settings
 mpsentence_s/mpsentence_s/settings.py
 
 .env
-db.sqlite3
+
+# db
+mpsentence_s/mpsentence.sqlite3
+mpsentence_s/test_mpsentence.sqlite3
