@@ -9,6 +9,7 @@ class User(models.Model):
     def __str__(self):
         return self.nickName
 
+    id = models.AutoField(primary_key=True)
     openId = models.CharField(max_length=200)
     code = models.CharField(max_length=200)
     sessionKey = models.CharField(max_length=200)
@@ -28,7 +29,8 @@ class Sentence(models.Model):
     def __str__(self):
         return self.content
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     date = models.DateField(help_text='date submitted', default=timezone.now)
     content = models.TextField(help_text='sentence')
     createTime = models.DateTimeField(auto_now_add=True)
@@ -38,7 +40,8 @@ class Translate(models.Model):
     def __str__(self):
         return self.content
 
-    sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
+    sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField(help_text='translate')
     createTime = models.DateTimeField(auto_now_add=True)
@@ -50,7 +53,8 @@ class Comment(models.Model):
     def __str__(self):
         return self.content
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     translate = models.ForeignKey(Translate, on_delete=models.CASCADE)
     content = models.TextField(help_text='comment')
     createTime = models.DateTimeField(default=timezone.now)
