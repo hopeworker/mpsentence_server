@@ -1,7 +1,6 @@
 import datetime
 import json
 import requests
-from django.utils import timezone
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -10,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 
 # Create your views here.
+
 from .models import User, Sentence, Translate, Comment
 
 
@@ -122,12 +122,17 @@ def translate(request):
         date_string = request.GET.get('date')
         if date_string:
             y, m, d = date_string.split('/')
+            # client should send UTC date to server, because server use UTC time when create records in database.
             date = datetime.datetime(int(y), int(m), int(d))
             s = Sentence.objects.filter(date=date).first()
-            translates = Translate.objects.filter(sentence=s)
+            if not s:
+                return JsonResponse({'error_code': 0, 'msg': 'no sentence today! get translates ok', 'data': ''})
+
+            translates = Translate.objects.filter(sentence=s).order_by('-createTime')
             trans_list = list()
             for item in translates:
                 res = dict()
+                res['translateId'] = item.id
                 res['sentence'] = item.sentence.content
                 res['nickName'] = item.user.nickName
                 res['avatarUrl'] = item.user.avatarUrl
@@ -140,3 +145,23 @@ def translate(request):
         fail_msg = 'get translates fail! no date param'
         return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
 
+
+@csrf_exempt
+def translate_update(request):
+    if request.method == 'POST':
+        body = request.body
+        params = json.loads(body)
+        translateId = params.get('translateId', None)
+        numberOfLikes = params.get('numberOfLikes', None)
+        numberOfComments = params.get('numberOfComments', None)
+        if translateId is not None:
+            translate = Translate.objects.filter(id=translateId).first()
+            if translate:
+                if numberOfLikes is not None:
+                    translate.numberOfLikes = numberOfLikes
+                if numberOfComments is not None:
+                    translate.numberOfComments = numberOfComments
+                translate.save()
+            return JsonResponse({'error_code': 0, 'msg': 'update translate ok', 'data': ''})
+        fail_msg = 'update translate fail! no translateId param'
+        return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
