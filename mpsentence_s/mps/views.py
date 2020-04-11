@@ -165,3 +165,38 @@ def translate_update(request):
             return JsonResponse({'error_code': 0, 'msg': 'update translate ok', 'data': ''})
         fail_msg = 'update translate fail! no translateId param'
         return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
+
+
+@csrf_exempt
+def comment(request):
+    if request.method == 'POST':
+        body = request.body
+        params = json.loads(body)
+        openId = params.get('openId')
+        translateId = params.get('translateId')
+        comment = params.get('comment', '')
+        if openId and translateId:
+            user = User.objects.filter(openId=openId)[0]
+            t = Translate.objects.filter(id=translateId)[0]
+            c = Comment(user=user, translate=t, content=comment)
+            c.save()
+            t.numberOfComments += 1
+            t.save()
+            return JsonResponse({'error_code': 0, 'msg': 'submit comment ok', 'data': ''})
+        fail_msg = 'submit comment fail! no openId or translateId param'
+        return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
+    elif request.method == 'GET':
+        translateId = request.GET.get('translateId')
+        if translateId:
+            comments = Comment.objects.filter(translate_id=translateId).order_by('-createTime')
+            comments_list = list()
+            for item in comments:
+                res = dict()
+                res['commentId'] = item.id
+                res['nickName'] = item.user.nickName
+                res['avatarUrl'] = item.user.avatarUrl
+                res['content'] = item.content
+                comments_list.append(res)
+            return JsonResponse({'error_code': 0, 'msg': 'get translates ok', 'data': comments_list})
+        fail_msg = 'get comments fail! no translateId param'
+        return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})

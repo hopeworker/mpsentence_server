@@ -10,4 +10,5 @@ urlpatterns = [
     path('sentence', views.sentence, name='sentence'),
     path('translate', views.translate, name='translate'),
     path('translate/update', views.translate_update, name='translate_update'),
+    path('comment', views.comment, name='comment'),
 ]
