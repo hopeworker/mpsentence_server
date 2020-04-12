@@ -100,6 +100,24 @@ def sentence(request):
             return JsonResponse({'error_code': 0, 'msg': 'submit sentence ok', 'data': ''})
         fail_msg = 'submit sentence fail! no openId param'
         return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
+    elif request.method == 'GET':
+        date_string = request.GET.get('date')
+        if date_string:
+            y, m, d = date_string.split('/')
+            # client should send UTC date to server, because server use UTC time when create records in database.
+            date = datetime.datetime(int(y), int(m), int(d))
+            s = Sentence.objects.filter(date=date).first()
+            if not s:
+                return JsonResponse({'error_code': 0, 'msg': 'no sentence today! ok', 'data': ''})
+            res = dict()
+            res['sentenceId'] = s.id
+            res['sentence'] = s.content
+            res['nickName'] = s.user.nickName
+            res['avatarUrl'] = s.user.avatarUrl
+            return JsonResponse({'error_code': 0, 'msg': 'get sentence ok', 'data': res})
+        else:
+            fail_msg = 'invalid data param:{}!'.format(date_string)
+            return JsonResponse({'error_code': -1, 'msg': fail_msg, 'data': ''})
 
 
 @csrf_exempt
