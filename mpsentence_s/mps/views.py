@@ -103,10 +103,9 @@ def sentence(request):
     elif request.method == 'GET':
         date_string = request.GET.get('date')
         if date_string:
-            y, m, d = date_string.split('/')
-            # client should send UTC date to server, because server use UTC time when create records in database.
-            date = datetime.datetime(int(y), int(m), int(d))
-            s = Sentence.objects.filter(date=date).first()
+            # client should send "settings.TIME_ZONE" date to server,
+            # because server use "settings.TIME_ZONE" time when create records in database.
+            s = Sentence.objects.filter(date=date_string).first()
             if not s:
                 return JsonResponse({'error_code': 0, 'msg': 'no sentence today! ok', 'data': ''})
             res = dict()
@@ -139,10 +138,10 @@ def translate(request):
     elif request.method == 'GET':
         date_string = request.GET.get('date')
         if date_string:
-            y, m, d = date_string.split('/')
+            #y, m, d = date_string.split('/')
             # client should send UTC date to server, because server use UTC time when create records in database.
-            date = datetime.datetime(int(y), int(m), int(d))
-            s = Sentence.objects.filter(date=date).first()
+            #date = datetime.datetime(date_string)
+            s = Sentence.objects.filter(date=date_string).first()
             if not s:
                 return JsonResponse({'error_code': 0, 'msg': 'no sentence today! get translates ok', 'data': ''})
 
